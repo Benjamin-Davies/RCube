@@ -1,0 +1,38 @@
+body {
+  text-align: center;
+  padding: 10px;
+  background-color: black;
+}
+
+.title-block {
+  padding: 5px;
+  background-color: red;
+}
+
+h1 {
+  font-size: 400%;
+  color: darkorange;
+}
+
+.subtitle {
+  font-size: 75%;
+  color: yellow;
+}
+
+h2 {
+  font-size: 200%;
+  background-color: blue;
+  color: limegreen;
+}
+
+.main-section {
+  font-size: 150%;
+  margin: 20px;
+  padding: 20px;
+  background-color: limegreen;
+  color: red;
+}
+
+.main-section>a {
+  color: blue;
+}
