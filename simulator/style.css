@@ -2,10 +2,6 @@ table {
   background-color: navy;
 }
 
-canvas {
-  background-color: cornflowerblue;
-}
-
-.controls {
+canvas, .controls {
   background-color: seagreen;
 }

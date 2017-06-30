@@ -15,6 +15,9 @@ class NetDrawer {
     var width = this.canvas.width;
     var height = this.canvas.height;
 
+    this.ctx.fillStyle = "cornflowerblue";
+    this.ctx.fillRect(0, 0, width, height);
+
     this.drawFace(120, 0,   cube.top);
     this.drawFace(120, 240, cube.bottom);
     this.drawFace(0,   120, cube.left);
