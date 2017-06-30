@@ -13,6 +13,8 @@ function init() {
 }
 
 function draw() {
+  requestAnimationFrame(draw);
+
   netDrawer.draw();
   perDrawer.draw();
 }

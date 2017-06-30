@@ -6,12 +6,17 @@ precision mediump float;
 
 attribute vec3 vertPosition;
 attribute vec3 vertColor;
+
 varying vec3 fragColor;
+
+uniform mat4 modelMatrix;
+uniform mat4 viewMatrix;
+uniform mat4 projMatrix;
 
 void main()
 {
   fragColor = vertColor;
-  gl_Position = vec4(vertPosition, 1.0);
+  gl_Position = projMatrix * viewMatrix * modelMatrix * vec4(vertPosition, 1.0);
 }
 `;
 
@@ -29,13 +34,20 @@ void main()
 }
 `;
 
+const identityMatrix = new Float32Array(16);
+mat4.identity(identityMatrix);
+
 /**
  * Class to manage drawing the 3d perspective view of the rubiks cube
  */
 class PerspectiveDrawer {
   canvas: HTMLCanvasElement;
-  gl: WebGLRenderingContext;
-  program: WebGLProgram;
+  private gl: WebGLRenderingContext;
+  private program: WebGLProgram;
+  private angle: number;
+  private modelMatrix: Float32Array;
+  private modelMatrixUniformLoc: WebGLUniformLocation;
+  private numberOfIndices: number;
 
   constructor(canvas: HTMLCanvasElement, net: NetDrawer) {
     this.canvas = canvas;
@@ -47,7 +59,7 @@ class PerspectiveDrawer {
       return;
     }
 
-    if(!this.initGL()) {
+    if (!this.initGL()) {
       alert("Something went wrong with the 3d perspective, you should still be able to use the net view.")
     }
   }
@@ -59,6 +71,14 @@ class PerspectiveDrawer {
   private initGL(): boolean {
     // create a local variable to store gl to shorten statements
     var gl = this.gl;
+
+    /**
+     * Enable a couple of things
+     */
+    gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.CULL_FACE);
+    gl.frontFace(gl.CCW);
+    gl.cullFace(gl.FRONT);
 
     /**
      * Create and compile shaders
@@ -90,20 +110,64 @@ class PerspectiveDrawer {
       console.log("Error linking shaders!", gl.getProgramInfoLog(program));
       return false;
     }
+    gl.useProgram(program);
     this.program = program;
 
     /**
      * Create buffer
      */
     var vertices = [
-      //x     y    z    r    g    b
-       0.0,  0.5, 0.0, 1.0, 0.0, 0.0,
-      -0.5, -0.5, 0.0, 0.0, 1.0, 0.0,
-       0.5, -0.5, 0.0, 0.0, 0.0, 1.0
+      // these correspond to the vertices on the net
+      // row 0
+      -1,  1,  1,   1.0, 0.0, 0.0,
+       1,  1,  1,   1.0, 0.0, 0.0,
+      // row 1
+      -1,  1,  1,   1.0, 1.0, 0.0,
+      -1,  1, -1,   1.0, 1.0, 0.0,
+       1,  1, -1,   1.0, 1.0, 0.0,
+       1,  1,  1,   1.0, 1.0, 0.0,
+      // row 2
+      -1, -1,  1,   0.0, 1.0, 0.0,
+      -1, -1, -1,   0.0, 1.0, 0.0,
+       1, -1, -1,   0.0, 1.0, 0.0,
+       1, -1,  1,   0.0, 1.0, 0.0,
+      // row 3
+      -1, -1,  1,   0.0, 1.0, 1.0,
+       1, -1,  1,   0.0, 1.0, 1.0,
+      // row 4
+      -1,  1,  1,   0.0, 0.0, 1.0,
+       1,  1,  1,   0.0, 0.0, 1.0
     ];
+    var indices = [
+      // these are the faces of the cube
+      // top
+      0, 3, 1,
+      3, 4, 1,
+      // bottom
+      7, 10, 8,
+      10, 11, 8,
+      // left
+      2, 6, 3,
+      6, 7, 3,
+      // right
+      4, 8, 5,
+      8, 9, 5,
+      // front
+      3, 7, 4,
+      7, 8, 4,
+      // back
+      10, 12, 11,
+      12, 13, 11
+    ];
+    this.numberOfIndices = indices.length;
+
     var vertexBufferObject = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBufferObject);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+    var indexBufferObject = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBufferObject);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
 
     /**Position attribute */
     var positionAttribLoc = gl.getAttribLocation(program, "vertPosition");
@@ -129,6 +193,27 @@ class PerspectiveDrawer {
     );
     gl.enableVertexAttribArray(colorAttribLocation);
 
+    /**
+     * Matrices
+     */
+    var modelMatrixUniformLocation = gl.getUniformLocation(program, "modelMatrix");
+    var viewMatrixUniformLocation = gl.getUniformLocation(program, "viewMatrix");
+    var projMatrixUniformLocation = gl.getUniformLocation(program, "projMatrix");
+
+    var modelMatrix = new Float32Array(16);
+    var viewMatrix = new Float32Array(16);
+    var projMatrix = new Float32Array(16);
+    mat4.identity(modelMatrix);
+    mat4.lookAt(viewMatrix, [0, 0, -5], [0, 0, 0], [0, 1, 0]);
+    mat4.perspective(projMatrix, Math.PI / 4, 1, 0.1, 1000.0);
+
+    gl.uniformMatrix4fv(modelMatrixUniformLocation, false, modelMatrix);
+    gl.uniformMatrix4fv(viewMatrixUniformLocation, false, viewMatrix);
+    gl.uniformMatrix4fv(projMatrixUniformLocation, false, projMatrix);
+
+    this.modelMatrix = modelMatrix;
+    this.modelMatrixUniformLoc = modelMatrixUniformLocation;
+
     return true;
   }
 
@@ -137,10 +222,16 @@ class PerspectiveDrawer {
    */
   draw() {
     if (!this.gl || !this.program) return;
+
+    this.angle = performance.now() / 1000 / 6 * 2 * Math.PI;
+    mat4.rotate(this.modelMatrix, identityMatrix, this.angle / 4, [1, 0, 0]);
+    mat4.rotate(this.modelMatrix, this.modelMatrix, this.angle, [0, 0, 1]);
+    this.gl.uniformMatrix4fv(this.modelMatrixUniformLoc, false, this.modelMatrix);
+
     this.gl.clearColor(0.4, 0.61, 0.94, 1.0);
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
     this.gl.useProgram(this.program);
-    this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+    this.gl.drawElements(this.gl.TRIANGLES, this.numberOfIndices, this.gl.UNSIGNED_SHORT, 0);
   }
 }

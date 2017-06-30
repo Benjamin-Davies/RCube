@@ -9,6 +9,7 @@ function init() {
     draw();
 }
 function draw() {
+    requestAnimationFrame(draw);
     netDrawer.draw();
     perDrawer.draw();
 }
