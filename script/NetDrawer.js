@@ -1,3 +1,5 @@
+var faceLetters = ['U', 'D', 'L', 'R', 'F', 'B'];
+var drawFaceLetters = false;
 var NetDrawer = (function () {
     function NetDrawer(canvas, cube) {
         this.canvas = canvas;
@@ -7,16 +9,19 @@ var NetDrawer = (function () {
     NetDrawer.prototype.draw = function () {
         var width = this.canvas.width;
         var height = this.canvas.height;
+        this.ctx.font = "bold 100px Arial";
+        this.ctx.textAlign = "center";
+        this.ctx.textBaseline = "middle";
         this.ctx.fillStyle = "cornflowerblue";
         this.ctx.fillRect(0, 0, width, height);
-        this.drawFace(120, 0, cube.top);
-        this.drawFace(120, 240, cube.bottom);
-        this.drawFace(0, 120, cube.left);
-        this.drawFace(240, 120, cube.right);
-        this.drawFace(120, 120, cube.front);
-        this.drawFace(120, 360, cube.back);
+        this.drawFace(120, 0, cube.top, 0);
+        this.drawFace(120, 240, cube.bottom, 1);
+        this.drawFace(0, 120, cube.left, 2);
+        this.drawFace(240, 120, cube.right, 3);
+        this.drawFace(120, 120, cube.front, 4);
+        this.drawFace(120, 360, cube.back, 5);
     };
-    NetDrawer.prototype.drawFace = function (x, y, face) {
+    NetDrawer.prototype.drawFace = function (x, y, face, faceId) {
         this.ctx.fillStyle = "black";
         this.ctx.fillRect(x, y, 120, 120);
         for (var i = 0; i < 3; i++) {
@@ -24,6 +29,11 @@ var NetDrawer = (function () {
                 this.ctx.fillStyle = colors[face.getColor(i, j)];
                 this.ctx.fillRect(x + i * 40 + 5, y + j * 40 + 5, 30, 30);
             }
+        }
+        if (drawFaceLetters) {
+            this.ctx.fillStyle = "white";
+            this.ctx.fillText(faceLetters[faceId], x + 60, y + 60);
+            this.ctx.strokeText(faceLetters[faceId], x + 60, y + 60);
         }
     };
     return NetDrawer;

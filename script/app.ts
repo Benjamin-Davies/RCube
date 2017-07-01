@@ -9,15 +9,12 @@ function init() {
   perCanvas = <HTMLCanvasElement>document.getElementById("perspective-canvas");
   perDrawer = new PerspectiveDrawer(perCanvas);
 
-  refreshTexture();
+  refresh();
   draw();
 }
 
-function refreshTexture() {
+function refresh() {
   netDrawer.draw();
-  
-  // var img = new Image();
-  // img.src = netCanvas.toDataURL();
   perDrawer.setTexture(netCanvas);
 }
 

@@ -6,10 +6,10 @@ function init() {
     netDrawer = new NetDrawer(netCanvas, cube);
     perCanvas = document.getElementById("perspective-canvas");
     perDrawer = new PerspectiveDrawer(perCanvas);
-    refreshTexture();
+    refresh();
     draw();
 }
-function refreshTexture() {
+function refresh() {
     netDrawer.draw();
     perDrawer.setTexture(netCanvas);
 }
