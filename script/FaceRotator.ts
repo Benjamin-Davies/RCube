@@ -1,35 +1,105 @@
-const CLOCKWISE = 1;
+const COUNTER_CLOCKWISE = 1;
 const FULL_TURN = 2;
-const COUNTER_CLOCKWISE = 3;
+const CLOCKWISE = 3;
 
-type FaceRotator = (cube: Cube, direction: number) => boolean;
+type Rotator = (cube: Cube, direction: number) => boolean;
 
-function rotateFace(face: CubeFace, direction: number) {
-  for (var i = 0; i < direction; i++) {
-    var tl = face.getColor(0, 0);
-    var tc = face.getColor(1, 0);
-    var tr = face.getColor(2, 0);
-    var mr = face.getColor(2, 1);
-    var br = face.getColor(2, 2);
-    var bc = face.getColor(1, 2);
-    var bl = face.getColor(0, 2);
-    var ml = face.getColor(0, 1);
-    face.setColor(0, 0, bl);
-    face.setColor(1, 0, ml);
-    face.setColor(2, 0, tl);
-    face.setColor(2, 1, tc);
-    face.setColor(2, 2, tr);
-    face.setColor(1, 2, mr);
-    face.setColor(0, 2, br);
-    face.setColor(0, 1, bc);
+function rotateArray<T>(a1: T[], amount: number): T[] {
+  var a2: T[] = [], k = a1.length;
+  for (var i = 0; i < k; i++) {
+    a2[i] = a1[(i + amount) % k];
   }
+  return a2;
 }
 
-var topFaceRotator = <FaceRotator>(cube: Cube, direction: number) => {
-  var left    = cube.getFace(CubeFace.LEFT);
-  var right   = cube.getFace(CubeFace.RIGHT);
-  var up      = cube.getFace(CubeFace.BACK);
-  var down    = cube.getFace(CubeFace.FRONT);
-  var array1: number[] = [
+function rotateFace(face: CubeFace, direction: number) {
+  var a = [
+    face.getColor(0, 0),
+    face.getColor(1, 0),
+    face.getColor(2, 0),
+    face.getColor(2, 1),
+    face.getColor(2, 2),
+    face.getColor(1, 2),
+    face.getColor(0, 2),
+    face.getColor(0, 1)
   ];
+  a = rotateArray<number>(a, 2 * direction);
+  face.setColor(0, 0, a[0]);
+  face.setColor(1, 0, a[1]);
+  face.setColor(2, 0, a[2]);
+  face.setColor(2, 1, a[3]);
+  face.setColor(2, 2, a[4]);
+  face.setColor(1, 2, a[5]);
+  face.setColor(0, 2, a[6]);
+  face.setColor(0, 1, a[7]);
+}
+
+var uFaceRotator = <Rotator>(cube: Cube, direction: number) => {
+  rotateFace(cube.getFace(CubeFace.UP), direction);
+  var l = cube.getFace(CubeFace.LEFT);
+  var r = cube.getFace(CubeFace.RIGHT);
+  var u = cube.getFace(CubeFace.BACK);
+  var d = cube.getFace(CubeFace.FRONT);
+  var a = [
+    u.getColor(0, 2),
+    u.getColor(1, 2),
+    u.getColor(2, 2),
+    r.getColor(2, 0),
+    r.getColor(1, 0),
+    r.getColor(0, 0),
+    d.getColor(2, 0),
+    d.getColor(1, 0),
+    d.getColor(0, 0),
+    l.getColor(2, 0),
+    l.getColor(1, 0),
+    l.getColor(0, 0)
+  ];
+  a = rotateArray<number>(a, direction * 3);
+  u.setColor(0, 2, a[0]);
+  u.setColor(1, 2, a[1]);
+  u.setColor(2, 2, a[2]);
+  r.setColor(2, 0, a[3]);
+  r.setColor(1, 0, a[4]);
+  r.setColor(0, 0, a[5]);
+  d.setColor(2, 0, a[6]);
+  d.setColor(1, 0, a[7]);
+  d.setColor(0, 0, a[8]);
+  l.setColor(2, 0, a[9]);
+  l.setColor(1, 0, a[10]);
+  l.setColor(0, 0, a[11]);
+};
+
+var dFaceRotator = <Rotator>(cube: Cube, direction: number) => {
+  rotateFace(cube.getFace(CubeFace.DOWN), direction);
+  var l = cube.getFace(CubeFace.LEFT);
+  var r = cube.getFace(CubeFace.RIGHT);
+  var u = cube.getFace(CubeFace.FRONT);
+  var d = cube.getFace(CubeFace.BACK);
+  var a = [
+    u.getColor(0, 2),
+    u.getColor(1, 2),
+    u.getColor(2, 2),
+    r.getColor(2, 2),
+    r.getColor(1, 2),
+    r.getColor(0, 2),
+    d.getColor(2, 0),
+    d.getColor(1, 0),
+    d.getColor(0, 0),
+    l.getColor(2, 2),
+    l.getColor(1, 2),
+    l.getColor(0, 2)
+  ];
+  a = rotateArray<number>(a, direction * 3);
+  u.setColor(0, 2, a[0]);
+  u.setColor(1, 2, a[1]);
+  u.setColor(2, 2, a[2]);
+  r.setColor(2, 2, a[3]);
+  r.setColor(1, 2, a[4]);
+  r.setColor(0, 2, a[5]);
+  d.setColor(2, 0, a[6]);
+  d.setColor(1, 0, a[7]);
+  d.setColor(0, 0, a[8]);
+  l.setColor(2, 2, a[9]);
+  l.setColor(1, 2, a[10]);
+  l.setColor(0, 2, a[11]);
 };

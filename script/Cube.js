@@ -10,7 +10,7 @@ var faceLetters = ['U', 'D', 'L', 'R', 'F', 'B'];
 var CubeFace = (function () {
     function CubeFace(c) {
         this.faces = [];
-        for (var i = 0; i < 8; i++) {
+        for (var i = 0; i < 9; i++) {
             this.faces[i] = c;
         }
     }

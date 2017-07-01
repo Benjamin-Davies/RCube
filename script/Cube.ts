@@ -24,7 +24,7 @@ class CubeFace {
 
   constructor(c: number) {
     this.faces = [];
-    for (var i = 0; i < 8; i++) {
+    for (var i = 0; i < 9; i++) {
       this.faces[i] = c;
     }
   }

@@ -20,7 +20,30 @@
     </tr>
     <tr>
       <td class="controls">
-        <input type="button" onclick="rotateFace(cube.faces[0], 1);refresh();" value="Rotate Cube">
+        <table>
+          <tr>
+            <td>
+              <input type="button" onclick="uFaceRotator(cube, CLOCKWISE);refresh();" value="U"></input>
+            </td>
+            <td>
+              <input type="button" onclick="uFaceRotator(cube, FULL_TURN);refresh();" value="2U"></input>
+            </td>
+            <td>
+              <input type="button" onclick="uFaceRotator(cube, COUNTER_CLOCKWISE);refresh();" value="U'"></input>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <input type="button" onclick="dFaceRotator(cube, CLOCKWISE);refresh();" value="D"></input>
+            </td>
+            <td>
+              <input type="button" onclick="dFaceRotator(cube, FULL_TURN);refresh();" value="2D"></input>
+            </td>
+            <td>
+              <input type="button" onclick="dFaceRotator(cube, COUNTER_CLOCKWISE);refresh();" value="D'"></input>
+            </td>
+          </tr>
+        </table>
       </td>
       <td class="controls">
         <input type="button" onclick="drawFaceLetters = !drawFaceLetters; refresh();" value="Show face initials">
