@@ -1,4 +1,3 @@
-var faceLetters = ['U', 'D', 'L', 'R', 'F', 'B'];
 var drawFaceLetters = false;
 var NetDrawer = (function () {
     function NetDrawer(canvas, cube) {
@@ -14,14 +13,15 @@ var NetDrawer = (function () {
         this.ctx.textBaseline = "middle";
         this.ctx.fillStyle = "cornflowerblue";
         this.ctx.fillRect(0, 0, width, height);
-        this.drawFace(120, 0, cube.top, 0);
-        this.drawFace(120, 240, cube.bottom, 1);
-        this.drawFace(0, 120, cube.left, 2);
-        this.drawFace(240, 120, cube.right, 3);
-        this.drawFace(120, 120, cube.front, 4);
-        this.drawFace(120, 360, cube.back, 5);
+        this.drawFace(120, 0, CubeFace.UP);
+        this.drawFace(0, 120, CubeFace.LEFT);
+        this.drawFace(120, 120, CubeFace.FRONT);
+        this.drawFace(240, 120, CubeFace.RIGHT);
+        this.drawFace(120, 240, CubeFace.DOWN);
+        this.drawFace(120, 360, CubeFace.BACK);
     };
-    NetDrawer.prototype.drawFace = function (x, y, face, faceId) {
+    NetDrawer.prototype.drawFace = function (x, y, faceId) {
+        var face = cube.getFace(faceId);
         this.ctx.fillStyle = "black";
         this.ctx.fillRect(x, y, 120, 120);
         for (var i = 0; i < 3; i++) {
@@ -32,8 +32,9 @@ var NetDrawer = (function () {
         }
         if (drawFaceLetters) {
             this.ctx.fillStyle = "white";
-            this.ctx.fillText(faceLetters[faceId], x + 60, y + 60);
-            this.ctx.strokeText(faceLetters[faceId], x + 60, y + 60);
+            var text = face.getFaceInitial();
+            this.ctx.fillText(text, x + 60, y + 60);
+            this.ctx.strokeText(text, x + 60, y + 60);
         }
     };
     return NetDrawer;

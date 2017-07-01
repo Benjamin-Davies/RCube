@@ -1,4 +1,4 @@
-var colors = [
+const colors = [
   "white",
   "yellow",
   "red",
@@ -6,11 +6,20 @@ var colors = [
   "blue",
   "green"
 ];
+const faceLetters = ['U', 'D', 'L', 'R', 'F', 'B'];
 
 class CubeFace {
   /**
-   * squares on the face. left to right then top to bottom.
+   * Constants for face ids
    */
+  static UP = 0;
+  static DOWN = 1;
+  static LEFT = 2;
+  static RIGHT = 3;
+  static FRONT = 4;
+  static BACK = 5;
+
+  /**squares on the face. left to right then top to bottom. */
   faces: number[];
 
   constructor(c: number) {
@@ -24,22 +33,31 @@ class CubeFace {
     var index = x + y * 3;
     return this.faces[index];
   }
+
+  getCenterColor() {
+    return this.faces[4];
+  }
+
+  setColor(x: number, y: number, color: number) {
+    var index = x + y * 3;
+    this.faces[index] = color;
+  }
+
+  getFaceInitial() {
+    return faceLetters[this.getCenterColor()];
+  }
 }
 
 class Cube {
-  top: CubeFace;
-  bottom: CubeFace;
-  left: CubeFace;
-  right: CubeFace;
-  front: CubeFace;
-  back: CubeFace;
+  faces: CubeFace[] = [];
+
+  getFace(faceId: number) {
+    return this.faces[faceId];
+  }
 
   constructor() {
-  this.top = new CubeFace(0);
-  this.bottom = new CubeFace(1);
-  this.left = new CubeFace(2);
-  this.right = new CubeFace(3);
-  this.front = new CubeFace(4);
-  this.back = new CubeFace(5);
+    for (var i = 0; i < 6; i++) {
+      this.faces.push(new CubeFace(i));
+    }
   }
 }
