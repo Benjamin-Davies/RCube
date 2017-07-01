@@ -1,9 +1,11 @@
+var rotate3d = true;
 var vertexShaderText = "\nprecision mediump float;\n\nattribute vec3 vertPosition;\nattribute vec2 vertTexCoord;\n\nvarying vec2 fragTexCoord;\n\nuniform mat4 modelMatrix;\nuniform mat4 viewMatrix;\nuniform mat4 projMatrix;\n\nvoid main()\n{\n  fragTexCoord = vertTexCoord;\n  gl_Position = projMatrix * viewMatrix * modelMatrix * vec4(vertPosition, 1.0);\n}\n";
 var fragmentShaderText = "\nprecision mediump float;\n\nvarying vec2 fragTexCoord;\n\nuniform sampler2D sampler;\n\nvoid main()\n{\n  gl_FragColor = texture2D(sampler, fragTexCoord);\n}\n";
 var identityMatrix = new Float32Array(16);
 mat4.identity(identityMatrix);
 var PerspectiveDrawer = (function () {
     function PerspectiveDrawer(canvas) {
+        this.angle = 0;
         this.canvas = canvas;
         this.gl = this.canvas.getContext("webgl");
         if (!this.gl)
@@ -112,10 +114,11 @@ var PerspectiveDrawer = (function () {
         this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, tex);
         this.gl.bindTexture(this.gl.TEXTURE_2D, null);
     };
-    PerspectiveDrawer.prototype.draw = function () {
+    PerspectiveDrawer.prototype.draw = function (dt) {
         if (!this.gl || !this.program)
             return;
-        this.angle = performance.now() / 1000 / 6 * 2 * Math.PI;
+        if (rotate3d)
+            this.angle += dt / 6 * 2 * Math.PI;
         mat4.rotate(this.modelMatrix, identityMatrix, this.angle / 4, [1, 0, 0]);
         mat4.rotate(this.modelMatrix, this.modelMatrix, this.angle, [0, 0, 1]);
         this.gl.uniformMatrix4fv(this.modelMatrixUniformLoc, false, this.modelMatrix);

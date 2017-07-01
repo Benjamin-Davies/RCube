@@ -1,3 +1,5 @@
+var rotate3d = true;
+
 /**
  * The source code for the vertex shader
  */
@@ -46,7 +48,7 @@ class PerspectiveDrawer {
   canvas: HTMLCanvasElement;
   private gl: WebGLRenderingContext;
   private program: WebGLProgram;
-  private angle: number;
+  private angle = 0;
   private modelMatrix: Float32Array;
   private modelMatrixUniformLoc: WebGLUniformLocation;
   private numberOfIndices: number;
@@ -241,10 +243,11 @@ class PerspectiveDrawer {
   /**
    * Draws the cube
    */
-  draw() {
+  draw(dt: number) {
     if (!this.gl || !this.program) return;
 
-    this.angle = performance.now() / 1000 / 6 * 2 * Math.PI;
+    if (rotate3d)
+      this.angle += dt / 6 * 2 * Math.PI;
     mat4.rotate(this.modelMatrix, identityMatrix, this.angle / 4, [1, 0, 0]);
     mat4.rotate(this.modelMatrix, this.modelMatrix, this.angle, [0, 0, 1]);
     this.gl.uniformMatrix4fv(this.modelMatrixUniformLoc, false, this.modelMatrix);

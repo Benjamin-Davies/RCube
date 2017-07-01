@@ -18,9 +18,12 @@ function refresh() {
   perDrawer.setTexture(netCanvas);
 }
 
+var lastFrame = 0;
 function draw() {
   requestAnimationFrame(draw);
-  perDrawer.draw();
+  var t = performance.now() / 1000.0;
+  perDrawer.draw(t - lastFrame);
+  lastFrame = t;
 }
 
 init();
