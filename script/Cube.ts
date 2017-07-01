@@ -40,7 +40,12 @@ class CubeFace {
 
   setColor(x: number, y: number, color: number) {
     var index = x + y * 3;
+    if (index == 4) {
+      console.error("ERROR, can not redefine the center color of a cube face.")
+      return false;
+    }
     this.faces[index] = color;
+    return true;
   }
 
   getFaceInitial() {

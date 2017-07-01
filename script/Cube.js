@@ -23,7 +23,12 @@ var CubeFace = (function () {
     };
     CubeFace.prototype.setColor = function (x, y, color) {
         var index = x + y * 3;
+        if (index == 4) {
+            console.error("ERROR, can not redefine the center color of a cube face.");
+            return false;
+        }
         this.faces[index] = color;
+        return true;
     };
     CubeFace.prototype.getFaceInitial = function () {
         return faceLetters[this.getCenterColor()];
