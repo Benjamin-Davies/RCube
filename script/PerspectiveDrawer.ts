@@ -5,9 +5,9 @@ const vertexShaderText = `
 precision mediump float;
 
 attribute vec3 vertPosition;
-attribute vec3 vertColor;
+attribute vec2 vertTexCoord;
 
-varying vec3 fragColor;
+varying vec2 fragTexCoord;
 
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
@@ -15,7 +15,7 @@ uniform mat4 projMatrix;
 
 void main()
 {
-  fragColor = vertColor;
+  fragTexCoord = vertTexCoord;
   gl_Position = projMatrix * viewMatrix * modelMatrix * vec4(vertPosition, 1.0);
 }
 `;
@@ -26,11 +26,13 @@ void main()
 const fragmentShaderText = `
 precision mediump float;
 
-varying vec3 fragColor;
+varying vec2 fragTexCoord;
+
+uniform sampler2D sampler;
 
 void main()
 {
-  gl_FragColor = vec4(fragColor, 1.0);
+  gl_FragColor = texture2D(sampler, fragTexCoord);
 }
 `;
 
@@ -48,8 +50,9 @@ class PerspectiveDrawer {
   private modelMatrix: Float32Array;
   private modelMatrixUniformLoc: WebGLUniformLocation;
   private numberOfIndices: number;
+  private texture: WebGLTexture;
 
-  constructor(canvas: HTMLCanvasElement, net: NetDrawer) {
+  constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.gl = this.canvas.getContext("webgl");
     if (!this.gl)
@@ -76,9 +79,8 @@ class PerspectiveDrawer {
      * Enable a couple of things
      */
     gl.enable(gl.DEPTH_TEST);
-    gl.enable(gl.CULL_FACE);
-    gl.frontFace(gl.CCW);
-    gl.cullFace(gl.FRONT);
+    // gl.enable(gl.CULL_FACE);
+    // gl.frontFace(gl.CCW);
 
     /**
      * Create and compile shaders
@@ -119,24 +121,24 @@ class PerspectiveDrawer {
     var vertices = [
       // these correspond to the vertices on the net
       // row 0
-      -1,  1,  1,   1.0, 0.0, 0.0,
-       1,  1,  1,   1.0, 0.0, 0.0,
+      -1,  1,  1,   0.334, 0.0,
+       1,  1,  1,   0.666, 0.0,
       // row 1
-      -1,  1,  1,   1.0, 1.0, 0.0,
-      -1,  1, -1,   1.0, 1.0, 0.0,
-       1,  1, -1,   1.0, 1.0, 0.0,
-       1,  1,  1,   1.0, 1.0, 0.0,
+      -1,  1,  1,   0.000, 0.25,
+      -1,  1, -1,   0.334, 0.25,
+       1,  1, -1,   0.666, 0.25,
+       1,  1,  1,   1.000, 0.25,
       // row 2
-      -1, -1,  1,   0.0, 1.0, 0.0,
-      -1, -1, -1,   0.0, 1.0, 0.0,
-       1, -1, -1,   0.0, 1.0, 0.0,
-       1, -1,  1,   0.0, 1.0, 0.0,
+      -1, -1,  1,   0.000, 0.5,
+      -1, -1, -1,   0.334, 0.5,
+       1, -1, -1,   0.666, 0.5,
+       1, -1,  1,   1.000, 0.5,
       // row 3
-      -1, -1,  1,   0.0, 1.0, 1.0,
-       1, -1,  1,   0.0, 1.0, 1.0,
+      -1, -1,  1,   0.334, 0.75,
+       1, -1,  1,   0.666, 0.75,
       // row 4
-      -1,  1,  1,   0.0, 0.0, 1.0,
-       1,  1,  1,   0.0, 0.0, 1.0
+      -1,  1,  1,   0.334, 1.0,
+       1,  1,  1,   0.666, 1.0
     ];
     var indices = [
       // these are the faces of the cube
@@ -176,22 +178,22 @@ class PerspectiveDrawer {
       3,
       gl.FLOAT, // type of element
       false,
-      6 * Float32Array.BYTES_PER_ELEMENT, // size of vertex
+      5 * Float32Array.BYTES_PER_ELEMENT, // size of vertex
       0 // offset from begining of vertex
     );
     gl.enableVertexAttribArray(positionAttribLoc);
 
     /**Color attribute */
-    var colorAttribLocation = gl.getAttribLocation(program, "vertColor");
+    var texCoordLocation = gl.getAttribLocation(program, "vertTexCoord");
     gl.vertexAttribPointer(
-      colorAttribLocation,
-      3,
+      texCoordLocation,
+      2,
       gl.FLOAT, // type of element
       false,
-      6 * Float32Array.BYTES_PER_ELEMENT, // size of vertex
+      5 * Float32Array.BYTES_PER_ELEMENT, // size of vertex
       3 * Float32Array.BYTES_PER_ELEMENT // offset from begining of vertex
     );
-    gl.enableVertexAttribArray(colorAttribLocation);
+    gl.enableVertexAttribArray(texCoordLocation);
 
     /**
      * Matrices
@@ -218,6 +220,25 @@ class PerspectiveDrawer {
   }
 
   /**
+   * Sets the texture
+   */
+  setTexture(tex: HTMLCanvasElement) {
+    this.texture = this.gl.createTexture();
+    this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
+
+    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
+    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
+    this.gl.texImage2D(
+      this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE,
+      tex
+      );
+
+    this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+  }
+
+  /**
    * Draws the cube
    */
   draw() {
@@ -232,6 +253,8 @@ class PerspectiveDrawer {
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
     this.gl.useProgram(this.program);
+    this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
+    this.gl.activeTexture(this.gl.TEXTURE0);
     this.gl.drawElements(this.gl.TRIANGLES, this.numberOfIndices, this.gl.UNSIGNED_SHORT, 0);
   }
 }

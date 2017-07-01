@@ -7,15 +7,22 @@ function init() {
   netDrawer = new NetDrawer(netCanvas, cube);
 
   perCanvas = <HTMLCanvasElement>document.getElementById("perspective-canvas");
-  perDrawer = new PerspectiveDrawer(perCanvas, netDrawer);
+  perDrawer = new PerspectiveDrawer(perCanvas);
 
+  refreshTexture();
   draw();
+}
+
+function refreshTexture() {
+  netDrawer.draw();
+  
+  // var img = new Image();
+  // img.src = netCanvas.toDataURL();
+  perDrawer.setTexture(netCanvas);
 }
 
 function draw() {
   requestAnimationFrame(draw);
-
-  netDrawer.draw();
   perDrawer.draw();
 }
 

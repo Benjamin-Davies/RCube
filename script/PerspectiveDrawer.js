@@ -1,9 +1,9 @@
-var vertexShaderText = "\nprecision mediump float;\n\nattribute vec3 vertPosition;\nattribute vec3 vertColor;\n\nvarying vec3 fragColor;\n\nuniform mat4 modelMatrix;\nuniform mat4 viewMatrix;\nuniform mat4 projMatrix;\n\nvoid main()\n{\n  fragColor = vertColor;\n  gl_Position = projMatrix * viewMatrix * modelMatrix * vec4(vertPosition, 1.0);\n}\n";
-var fragmentShaderText = "\nprecision mediump float;\n\nvarying vec3 fragColor;\n\nvoid main()\n{\n  gl_FragColor = vec4(fragColor, 1.0);\n}\n";
+var vertexShaderText = "\nprecision mediump float;\n\nattribute vec3 vertPosition;\nattribute vec2 vertTexCoord;\n\nvarying vec2 fragTexCoord;\n\nuniform mat4 modelMatrix;\nuniform mat4 viewMatrix;\nuniform mat4 projMatrix;\n\nvoid main()\n{\n  fragTexCoord = vertTexCoord;\n  gl_Position = projMatrix * viewMatrix * modelMatrix * vec4(vertPosition, 1.0);\n}\n";
+var fragmentShaderText = "\nprecision mediump float;\n\nvarying vec2 fragTexCoord;\n\nuniform sampler2D sampler;\n\nvoid main()\n{\n  gl_FragColor = texture2D(sampler, fragTexCoord);\n}\n";
 var identityMatrix = new Float32Array(16);
 mat4.identity(identityMatrix);
 var PerspectiveDrawer = (function () {
-    function PerspectiveDrawer(canvas, net) {
+    function PerspectiveDrawer(canvas) {
         this.canvas = canvas;
         this.gl = this.canvas.getContext("webgl");
         if (!this.gl)
@@ -19,9 +19,6 @@ var PerspectiveDrawer = (function () {
     PerspectiveDrawer.prototype.initGL = function () {
         var gl = this.gl;
         gl.enable(gl.DEPTH_TEST);
-        gl.enable(gl.CULL_FACE);
-        gl.frontFace(gl.CCW);
-        gl.cullFace(gl.FRONT);
         var vertexShader = gl.createShader(gl.VERTEX_SHADER);
         gl.shaderSource(vertexShader, vertexShaderText);
         gl.compileShader(vertexShader);
@@ -47,20 +44,20 @@ var PerspectiveDrawer = (function () {
         gl.useProgram(program);
         this.program = program;
         var vertices = [
-            -1, 1, 1, 1.0, 0.0, 0.0,
-            1, 1, 1, 1.0, 0.0, 0.0,
-            -1, 1, 1, 1.0, 1.0, 0.0,
-            -1, 1, -1, 1.0, 1.0, 0.0,
-            1, 1, -1, 1.0, 1.0, 0.0,
-            1, 1, 1, 1.0, 1.0, 0.0,
-            -1, -1, 1, 0.0, 1.0, 0.0,
-            -1, -1, -1, 0.0, 1.0, 0.0,
-            1, -1, -1, 0.0, 1.0, 0.0,
-            1, -1, 1, 0.0, 1.0, 0.0,
-            -1, -1, 1, 0.0, 1.0, 1.0,
-            1, -1, 1, 0.0, 1.0, 1.0,
-            -1, 1, 1, 0.0, 0.0, 1.0,
-            1, 1, 1, 0.0, 0.0, 1.0
+            -1, 1, 1, 0.334, 0.0,
+            1, 1, 1, 0.666, 0.0,
+            -1, 1, 1, 0.000, 0.25,
+            -1, 1, -1, 0.334, 0.25,
+            1, 1, -1, 0.666, 0.25,
+            1, 1, 1, 1.000, 0.25,
+            -1, -1, 1, 0.000, 0.5,
+            -1, -1, -1, 0.334, 0.5,
+            1, -1, -1, 0.666, 0.5,
+            1, -1, 1, 1.000, 0.5,
+            -1, -1, 1, 0.334, 0.75,
+            1, -1, 1, 0.666, 0.75,
+            -1, 1, 1, 0.334, 1.0,
+            1, 1, 1, 0.666, 1.0
         ];
         var indices = [
             0, 3, 1,
@@ -84,11 +81,11 @@ var PerspectiveDrawer = (function () {
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBufferObject);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
         var positionAttribLoc = gl.getAttribLocation(program, "vertPosition");
-        gl.vertexAttribPointer(positionAttribLoc, 3, gl.FLOAT, false, 6 * Float32Array.BYTES_PER_ELEMENT, 0);
+        gl.vertexAttribPointer(positionAttribLoc, 3, gl.FLOAT, false, 5 * Float32Array.BYTES_PER_ELEMENT, 0);
         gl.enableVertexAttribArray(positionAttribLoc);
-        var colorAttribLocation = gl.getAttribLocation(program, "vertColor");
-        gl.vertexAttribPointer(colorAttribLocation, 3, gl.FLOAT, false, 6 * Float32Array.BYTES_PER_ELEMENT, 3 * Float32Array.BYTES_PER_ELEMENT);
-        gl.enableVertexAttribArray(colorAttribLocation);
+        var texCoordLocation = gl.getAttribLocation(program, "vertTexCoord");
+        gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 5 * Float32Array.BYTES_PER_ELEMENT, 3 * Float32Array.BYTES_PER_ELEMENT);
+        gl.enableVertexAttribArray(texCoordLocation);
         var modelMatrixUniformLocation = gl.getUniformLocation(program, "modelMatrix");
         var viewMatrixUniformLocation = gl.getUniformLocation(program, "viewMatrix");
         var projMatrixUniformLocation = gl.getUniformLocation(program, "projMatrix");
@@ -105,6 +102,16 @@ var PerspectiveDrawer = (function () {
         this.modelMatrixUniformLoc = modelMatrixUniformLocation;
         return true;
     };
+    PerspectiveDrawer.prototype.setTexture = function (tex) {
+        this.texture = this.gl.createTexture();
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
+        this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, tex);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+    };
     PerspectiveDrawer.prototype.draw = function () {
         if (!this.gl || !this.program)
             return;
@@ -115,7 +122,10 @@ var PerspectiveDrawer = (function () {
         this.gl.clearColor(0.4, 0.61, 0.94, 1.0);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         this.gl.useProgram(this.program);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
+        this.gl.activeTexture(this.gl.TEXTURE0);
         this.gl.drawElements(this.gl.TRIANGLES, this.numberOfIndices, this.gl.UNSIGNED_SHORT, 0);
     };
     return PerspectiveDrawer;
 }());
+//# sourceMappingURL=PerspectiveDrawer.js.map

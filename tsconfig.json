@@ -5,7 +5,7 @@
         "noImplicitAny": true,
         "noImplicitReturns": true,
         "removeComments": true,
-        "sourceMap": false
+        "sourceMap": true
     },
     "include": [
         "script/*"

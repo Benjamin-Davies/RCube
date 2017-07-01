@@ -30,3 +30,4 @@ var Cube = (function () {
     }
     return Cube;
 }());
+//# sourceMappingURL=Cube.js.map
