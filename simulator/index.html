@@ -19,7 +19,9 @@
       </td>
     </tr>
     <tr>
-      <td class="controls">Make a move controls here</td>
+      <td class="controls">
+        <input type="button" onclick="rotateFace(cube.faces[0], 1);refresh();" value="Rotate Cube">
+      </td>
       <td class="controls">
         <input type="button" onclick="drawFaceLetters = !drawFaceLetters; refresh();" value="Show face initials">
         <input type="button" onclick="rotate3d = !rotate3d;" value="Rotate 3d view">
@@ -29,6 +31,7 @@
 
   <script src="../script/lib/gl-matrix-min.js"></script>
   <script src="../script/Cube.js"></script>
+  <script src="../script/FaceRotator.js"></script>
   <script src="../script/NetDrawer.js"></script>
   <script src="../script/PerspectiveDrawer.js"></script>
   <script src="../script/app.js"></script>
