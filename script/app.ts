@@ -2,15 +2,39 @@ var cube = new Cube();
 var netCanvas: HTMLCanvasElement, netDrawer: NetDrawer;
 var perCanvas: HTMLCanvasElement, perDrawer: PerspectiveDrawer;
 
+function calculateCanvasSize(): Size {
+  var innerMin = Math.min(innerWidth, innerHeight);
+  return {
+    width: innerMin / 2,
+    height: innerMin * 4 / 6
+  };
+}
+
 function init() {
+  addEventListener("resize", resize);
+
+  const size = calculateCanvasSize();
+
   netCanvas = <HTMLCanvasElement>document.getElementById("cube-net-canvas");
-  netDrawer = new NetDrawer(netCanvas, cube);
+  netDrawer = new NetDrawer(netCanvas, cube, size);
 
   perCanvas = <HTMLCanvasElement>document.getElementById("perspective-canvas");
-  perDrawer = new PerspectiveDrawer(perCanvas);
+  perDrawer = new PerspectiveDrawer(perCanvas, size);
 
   refresh();
   draw();
+}
+
+function resize() {
+  if (!netDrawer || !perDrawer)
+    return;
+
+  const size = calculateCanvasSize();
+
+  netDrawer.resize(size);
+  perDrawer.resize(size);
+
+  refresh();
 }
 
 function refresh() {

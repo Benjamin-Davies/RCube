@@ -4,7 +4,7 @@ var fragmentShaderText = "\nprecision mediump float;\n\nvarying vec2 fragTexCoor
 var identityMatrix = new Float32Array(16);
 mat4.identity(identityMatrix);
 var PerspectiveDrawer = (function () {
-    function PerspectiveDrawer(canvas) {
+    function PerspectiveDrawer(canvas, size) {
         this.angle = 0;
         this.canvas = canvas;
         this.gl = this.canvas.getContext("webgl");
@@ -14,6 +14,7 @@ var PerspectiveDrawer = (function () {
             alert("Failed to intialize 3d pespective.");
             return;
         }
+        this.resize(size);
         if (!this.initGL()) {
             alert("Something went wrong with the 3d perspective, you should still be able to use the net view.");
         }
@@ -95,8 +96,8 @@ var PerspectiveDrawer = (function () {
         var viewMatrix = new Float32Array(16);
         var projMatrix = new Float32Array(16);
         mat4.identity(modelMatrix);
-        mat4.lookAt(viewMatrix, [0, 0, -5], [0, 0, 0], [0, 1, 0]);
-        mat4.perspective(projMatrix, Math.PI / 4, 1, 0.1, 1000.0);
+        mat4.lookAt(viewMatrix, [0, 0, -7], [0, 0, 0], [0, 1, 0]);
+        mat4.perspective(projMatrix, Math.PI / 4, 0.75, 0.1, 1000.0);
         gl.uniformMatrix4fv(modelMatrixUniformLocation, false, modelMatrix);
         gl.uniformMatrix4fv(viewMatrixUniformLocation, false, viewMatrix);
         gl.uniformMatrix4fv(projMatrixUniformLocation, false, projMatrix);
@@ -113,6 +114,11 @@ var PerspectiveDrawer = (function () {
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
         this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, tex);
         this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+    };
+    PerspectiveDrawer.prototype.resize = function (newSize) {
+        this.canvas.width = newSize.width;
+        this.canvas.height = newSize.height;
+        this.gl.viewport(0, 0, newSize.width, newSize.height);
     };
     PerspectiveDrawer.prototype.draw = function (dt) {
         if (!this.gl || !this.program)

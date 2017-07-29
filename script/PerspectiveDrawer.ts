@@ -54,7 +54,7 @@ class PerspectiveDrawer {
   private numberOfIndices: number;
   private texture: WebGLTexture;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, size: Size) {
     this.canvas = canvas;
     this.gl = this.canvas.getContext("webgl");
     if (!this.gl)
@@ -63,6 +63,8 @@ class PerspectiveDrawer {
       alert("Failed to intialize 3d pespective.");
       return;
     }
+
+    this.resize(size);
 
     if (!this.initGL()) {
       alert("Something went wrong with the 3d perspective, you should still be able to use the net view.")
@@ -123,24 +125,24 @@ class PerspectiveDrawer {
     var vertices = [
       // these correspond to the vertices on the net
       // row 0
-      -1,  1,  1,   0.334, 0.0,
-       1,  1,  1,   0.666, 0.0,
+      -1, 1, 1, 0.334, 0.0,
+      1, 1, 1, 0.666, 0.0,
       // row 1
-      -1,  1,  1,   0.000, 0.25,
-      -1,  1, -1,   0.334, 0.25,
-       1,  1, -1,   0.666, 0.25,
-       1,  1,  1,   1.000, 0.25,
+      -1, 1, 1, 0.000, 0.25,
+      -1, 1, -1, 0.334, 0.25,
+      1, 1, -1, 0.666, 0.25,
+      1, 1, 1, 1.000, 0.25,
       // row 2
-      -1, -1,  1,   0.000, 0.5,
-      -1, -1, -1,   0.334, 0.5,
-       1, -1, -1,   0.666, 0.5,
-       1, -1,  1,   1.000, 0.5,
+      -1, -1, 1, 0.000, 0.5,
+      -1, -1, -1, 0.334, 0.5,
+      1, -1, -1, 0.666, 0.5,
+      1, -1, 1, 1.000, 0.5,
       // row 3
-      -1, -1,  1,   0.334, 0.75,
-       1, -1,  1,   0.666, 0.75,
+      -1, -1, 1, 0.334, 0.75,
+      1, -1, 1, 0.666, 0.75,
       // row 4
-      -1,  1,  1,   0.334, 1.0,
-       1,  1,  1,   0.666, 1.0
+      -1, 1, 1, 0.334, 1.0,
+      1, 1, 1, 0.666, 1.0
     ];
     var indices = [
       // these are the faces of the cube
@@ -208,8 +210,8 @@ class PerspectiveDrawer {
     var viewMatrix = new Float32Array(16);
     var projMatrix = new Float32Array(16);
     mat4.identity(modelMatrix);
-    mat4.lookAt(viewMatrix, [0, 0, -5], [0, 0, 0], [0, 1, 0]);
-    mat4.perspective(projMatrix, Math.PI / 4, 1, 0.1, 1000.0);
+    mat4.lookAt(viewMatrix, [0, 0, -7], [0, 0, 0], [0, 1, 0]);
+    mat4.perspective(projMatrix, Math.PI / 4, 0.75, 0.1, 1000.0);
 
     gl.uniformMatrix4fv(modelMatrixUniformLocation, false, modelMatrix);
     gl.uniformMatrix4fv(viewMatrixUniformLocation, false, viewMatrix);
@@ -235,9 +237,15 @@ class PerspectiveDrawer {
     this.gl.texImage2D(
       this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE,
       tex
-      );
+    );
 
     this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+  }
+
+  resize(newSize: Size) {
+    this.canvas.width = newSize.width;
+    this.canvas.height = newSize.height;
+    this.gl.viewport(0, 0, newSize.width, newSize.height);
   }
 
   /**
