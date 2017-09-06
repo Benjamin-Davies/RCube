@@ -1,3 +1,5 @@
+import { Cube, CubeFace, colors } from "./Cube";
+
 var drawFaceLetters = false;
 
 class NetDrawer {
@@ -50,7 +52,7 @@ class NetDrawer {
   }
 
   drawFace(x: number, y: number, faceId: number) {
-    var face = cube.getFace(faceId);
+    var face = this.cube.getFace(faceId);
 
     this.ctx.fillStyle = "black";
     this.ctx.fillRect(x, y, this.faceWidth, this.faceWidth);
@@ -70,3 +72,5 @@ class NetDrawer {
     }
   }
 }
+
+export default NetDrawer;

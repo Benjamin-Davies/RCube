@@ -1,2 +1,7 @@
 .vscode/*
 debug.log
+
+node_modules/
+
+script/**/*.js
+script/**/*.js.map

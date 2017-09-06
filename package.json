@@ -1,0 +1,21 @@
+{
+  "name": "RCube",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/Benjamin-Davies/RCube.git",
+  "author": "Benjamin Davies <bentendavies@gmail.com>",
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "@types/gl-matrix": "^2.2.34",
+    "ts-loader": "^2.3.4",
+    "typescript": "^2.5.2",
+    "webpack": "^3.5.5"
+  },
+  "scripts": {
+    "build": "webpack",
+    "watch": "webpack --watch"
+  },
+  "dependencies": {
+    "gl-matrix": "^2.4.0"
+  }
+}

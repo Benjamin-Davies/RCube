@@ -1,4 +1,4 @@
-const colors = [
+export const colors = [
   "white",
   "yellow",
   "red",
@@ -6,9 +6,9 @@ const colors = [
   "blue",
   "green"
 ];
-const faceLetters = ['U', 'D', 'L', 'R', 'F', 'B'];
+export const faceLetters = ['U', 'D', 'L', 'R', 'F', 'B'];
 
-class CubeFace {
+export class CubeFace {
   /**
    * Constants for face ids
    */
@@ -53,7 +53,7 @@ class CubeFace {
   }
 }
 
-class Cube {
+export class Cube {
   faces: CubeFace[] = [];
 
   getFace(faceId: number) {

@@ -1,3 +1,5 @@
+import { mat4 } from 'gl-matrix';
+
 var rotate3d = true;
 
 /**
@@ -38,9 +40,6 @@ void main()
 }
 `;
 
-const identityMatrix = new Float32Array(16);
-mat4.identity(identityMatrix);
-
 /**
  * Class to manage drawing the 3d perspective view of the rubiks cube
  */
@@ -49,7 +48,7 @@ class PerspectiveDrawer {
   private gl: WebGLRenderingContext;
   private program: WebGLProgram;
   private angle = 0;
-  private modelMatrix: Float32Array;
+  private modelMatrix: mat4;
   private modelMatrixUniformLoc: WebGLUniformLocation;
   private numberOfIndices: number;
   private texture: WebGLTexture;
@@ -206,10 +205,9 @@ class PerspectiveDrawer {
     var viewMatrixUniformLocation = gl.getUniformLocation(program, "viewMatrix");
     var projMatrixUniformLocation = gl.getUniformLocation(program, "projMatrix");
 
-    var modelMatrix = new Float32Array(16);
-    var viewMatrix = new Float32Array(16);
-    var projMatrix = new Float32Array(16);
-    mat4.identity(modelMatrix);
+    var modelMatrix = mat4.create();
+    var viewMatrix = mat4.create();
+    var projMatrix = mat4.create();
     mat4.lookAt(viewMatrix, [0, 0, -7], [0, 0, 0], [0, 1, 0]);
     mat4.perspective(projMatrix, Math.PI / 4, 0.75, 0.1, 1000.0);
 
@@ -256,7 +254,8 @@ class PerspectiveDrawer {
 
     if (rotate3d)
       this.angle += dt / 6 * 2 * Math.PI;
-    mat4.rotate(this.modelMatrix, identityMatrix, this.angle / 4, [1, 0, 0]);
+    mat4.identity(this.modelMatrix);
+    mat4.rotate(this.modelMatrix, this.modelMatrix, this.angle / 4, [1, 0, 0]);
     mat4.rotate(this.modelMatrix, this.modelMatrix, this.angle, [0, 0, 1]);
     this.gl.uniformMatrix4fv(this.modelMatrixUniformLoc, false, this.modelMatrix);
 
@@ -269,3 +268,5 @@ class PerspectiveDrawer {
     this.gl.drawElements(this.gl.TRIANGLES, this.numberOfIndices, this.gl.UNSIGNED_SHORT, 0);
   }
 }
+
+export default PerspectiveDrawer;

@@ -1,3 +1,7 @@
+import { Cube } from './Cube';
+import NetDrawer from './NetDrawer';
+import PerspectiveDrawer from './PerspectiveDrawer';
+
 var cube = new Cube();
 var netCanvas: HTMLCanvasElement, netDrawer: NetDrawer;
 var perCanvas: HTMLCanvasElement, perDrawer: PerspectiveDrawer;
